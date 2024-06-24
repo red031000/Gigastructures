@@ -1,12 +1,22 @@
 # attempt at giving turrets explicit turret entities and not implicit ones
-# does not work...
 maginot_extra_large_turret = {
 	size = extra_large
 	component = weapon
 	entities = {
-		weapon_type_kinetic = "reptilian_01_turret_xl_entity"
-		weapon_type_energy = "reptilian_01_turret_xl_entity"
-		weapon_type_explosive = "reptilian_01_turret_xl_entity"
+		weapon_type_kinetic = "pc_giga_maginot_world_xl_entity"
+		weapon_type_energy = "pc_giga_maginot_world_xl_entity"
+		weapon_type_explosive = "pc_giga_maginot_world_xl_entity"
+	}
+}
+
+# uses the terraforming station to look like a cannon platform in orbit
+maginot_cannon_platform_turret = {
+	size = extra_large
+	component = weapon
+	entities = {
+		weapon_type_kinetic = "molluscoid_01_maginot_cannon_platform_entity"
+		weapon_type_energy = "molluscoid_01_maginot_cannon_platform_entity"
+		weapon_type_explosive = "molluscoid_01_maginot_cannon_platform_entity"
 	}
 }
 
@@ -14,8 +24,38 @@ maginot_large_turret = {
 	size = large
 	component = weapon
 	entities = {
-		weapon_type_kinetic = "reptilian_01_large_kinetic_gun_entity"
-		weapon_type_energy = "reptilian_01_large_laser_gun_entity"
-		weapon_type_explosive = "reptilian_01_turret_missile_large_entity"
+		weapon_type_kinetic = "pc_giga_maginot_world_kinetic_l_entity"
+		weapon_type_energy = "pc_giga_maginot_world_laser_l_entity"
+		weapon_type_explosive = "pc_giga_maginot_world_missile_l_entity"
+	}
+}
+
+maginot_medium_turret = {
+	size = medium
+	component = weapon
+	entities = {
+		weapon_type_kinetic = "pc_giga_maginot_world_kinetic_m_entity"
+		weapon_type_energy = "pc_giga_maginot_world_laser_m_entity"
+		weapon_type_explosive = "pc_giga_maginot_world_missile_s_entity"
+	}
+}
+
+maginot_small_turret = {
+	size = small
+	component = weapon
+	entities = {
+		weapon_type_kinetic = "pc_giga_maginot_world_special_s_entity"
+		weapon_type_energy = "pc_giga_maginot_world_special_s_entity"
+		weapon_type_explosive = "pc_giga_maginot_world_special_s_entity"
+	}
+}
+
+maginot_point_defense_turret = {
+	size = point_defence
+	component = weapon
+	entities = {
+		weapon_type_kinetic = "pc_giga_maginot_world_flak_entity"
+		weapon_type_energy = "pc_giga_maginot_world_point_defence_entity"
+		weapon_type_explosive = "pc_giga_maginot_world_missile_s_entity"
 	}
 }

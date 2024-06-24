@@ -473,6 +473,7 @@ nicoll_beam_firing = {
 	upgrade_from = { nicoll_beam_menu }
 	potential = { always = no }
 	resources = { category = giga_gigastructures }
+<<<<<<< HEAD
 	
 	outliner_trigger = {
 		exists = owner
@@ -480,3 +481,7 @@ nicoll_beam_firing = {
 	}
 	
 }
+=======
+}
+
+>>>>>>> e52b3a6d64106034535a32a2a8ddef53e1643032

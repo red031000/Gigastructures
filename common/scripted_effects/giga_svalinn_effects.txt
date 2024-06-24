@@ -1,0 +1,92 @@
+### Svalinn functions
+
+
+# spawns system
+## call from system scope
+# parameters:
+# - system_x is an event target name for the system where a svalinn started construction
+# - system_y is an event target name for the target system
+# - construction_owner is an event target name for the country that's building the svalinn
+# - calculated_angle_variable is the name of the variable previously set on the construction system
+# which contains the necessary angle for spawn_system to make it face the target system
+giga_svalinn_spawn_halfway_system = {
+	event_target:$giga_system_x$ = {
+		# spawn_system does not work with anything but a simple number passed in
+		# calculate midway system distance with script value
+		# and then set a variable on the star system for checking later
+		set_variable = {
+			which = giga_calculated_distance_to_y_system
+			value = value:giga_calculate_half_of_distance|system_target_scope|$giga_system_y$|
+		}
+
+		# example of what the spawn effect usage looks like, this is buried under other effects
+		#giga_svalinn_halfway_system_spawn_effect = {
+		#	LENGTH = 3
+		#	ANGLE = 90
+		#}
+		# spawning a new system from this effect saves an event target "giga_svalinn_interstellar_new_system" for the system
+
+		# the actual nested spawn effect,
+		# which selects length and angle numbers from the variable to pass in with a gigantic if statement
+		# this is painful
+		giga_svalinn_select_length_effect = {
+			length_variable = giga_calculated_distance_to_y_system
+			angle_variable = $calculated_angle_variable$
+			giga_system_x = $giga_system_x$
+		}
+		
+		last_created_system = {
+			set_surveyed = { surveyed = yes }
+			every_system_planet = { set_surveyed = { surveyed = yes } }
+			create_starbase = {
+				size = starbase_citadel
+				owner = event_target:$construction_owner$
+			}
+		}
+		remove_hyperlane = {
+			from = event_target:$giga_system_x$
+			to = event_target:$giga_system_y$
+		}
+		add_hyperlane = {
+			from = event_target:$giga_system_x$
+			to = event_target:giga_svalinn_interstellar_new_system
+		}
+		add_hyperlane = {
+			from = event_target:$giga_system_y$
+			to = event_target:giga_svalinn_interstellar_new_system
+		}
+	}
+}
+
+# TODO
+giga_svalinn_halfway_system_spawn_effect = {
+	event_target:$giga_system_x$ = {
+		spawn_system = {
+			# passing variables here does not work at all
+			# hence the gating with a selection effect to turn variable into a number (it's not pretty)
+			min_distance = $LENGTH$
+			max_distance = $LENGTH$
+			min_orientation_angle = $ANGLE$
+			max_orientation_angle = $ANGLE$
+			hyperlane = no
+			is_discovered = yes
+			initializer = giga_svalinn_interstellar_init
+			effect = {
+				isolate_system = yes
+				save_event_target_as = giga_svalinn_interstellar_new_system
+				set_star_flag = giga_svalinn_interstellar_new_system
+				# save these values for reference in the new system
+				set_variable = {
+					which = giga_calculated_halfway_distance_to_target
+					value = $LENGTH$
+				}
+				set_variable = {
+					which = giga_calculated_angle_to_target_system
+					value = $ANGLE$
+				}
+			}
+		}
+	}
+}
+
+effect solar_system = { set_variable = { which = giga_calculated_distance_to_y_system value = value:giga_calculate_half_of_distance|system_target_scope|second_system| } }

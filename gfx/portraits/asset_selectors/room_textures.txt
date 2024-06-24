@@ -1,7 +1,7 @@
 room_selector = {
-	#default = "d_room"	#point to textures that end with "_room.dds" but remove the file ending
+	# Script may point to textures in 'gfx\portraits\city_sets\' that end with "_room.dds" while ignoring the file ending, e.g.: "room = machine_room" will find 'machine_room(.dds)'.
 
-	default = "default_room"	#point to textures that end with "_room.dds" but remove the file ending
+	default = "default_room"
 
 	#will run with a limited country scope. species and government is set but the country does not actually exist
 	game_setup = {
@@ -38,6 +38,8 @@ room_selector = {
 		"cybernetics_room"							= { always = yes }
 		"synthetics_room"							= { always = yes }
 	}
+
+	# TODO: merge aerolfos branch better, this is just default, but the changes are too vast to properly see if this is correct or not
 
 	#leader scope
 	ruler = {

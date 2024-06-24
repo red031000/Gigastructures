@@ -20,12 +20,14 @@ is_pluralist = { always = no }
 is_elitist = { always = no }
 is_ecocentrist = { always = no }
 is_anthropocentric = { always = no }
+is_bugged_cult = { always = no }
 is_bugged_advanced_cult = { is_death_cult_empire = yes } # used in priest swap inline, don't remove
 is_bugged_luminosity_cult = { always = no }
 is_bugged_war_cult = { always = no }
 is_bugged_death_cult = { always = no }
 is_bugged_government_intervention = { always = no }
 is_bugged_rooftop_farmers = { always = no }
+is_bugged_war_engineers = { always = no }
 
 is_bugged_governmental = { always = no }
 is_bugged_governmental_materialist = { always = no }
@@ -98,7 +100,6 @@ atw_is_gas_giant = { always = no }
 atw_is_barren = { always = no }
 atw_is_barren_cold = { always = no }
 atw_is_frozen = { always = no }
-
 
 # Forerunner Tradition Overhaul
 has_forerunner_defensive_traditions = {

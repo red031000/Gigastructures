@@ -1,4 +1,15 @@
 # Maginot World
+# Prerequisite tradition tree that is used for rolling Maginot tech
+has_maginot_defensive_tradition_prereq = {
+	OR = {
+		has_tradition = tr_unyielding_finish
+		has_active_tradition = tr_unyielding_federations_finish
+		# forerunner compat
+		has_forerunner_defensive_traditions = yes
+		# you can overwrite this trigger here to add more tradition trees
+	}
+}
+
 # Extendable trigger that replaces is_planet_class checks, since there can be several types of Maginot Worlds
 is_giga_maginot_world = {
 	OR = {
@@ -94,3 +105,15 @@ is_maginotable_restricted = {
 		has_planet_flag = has_planet_pc_mega
 	}
 }
+
+giga_is_maginot_starbase = {
+	has_starbase_size >= giga_maginot_strategic_defence_command_starbase_tier_1
+}
+
+## call from fleet scope
+# extensible list of fleet flags (presumably) that the Maginot should not destroy when detonating
+# they point the explosion in the other direction or something
+giga_maginot_explosion_should_not_kill_fleet = {
+	has_fleet_flag = cosmogenesis_needle
+}
+

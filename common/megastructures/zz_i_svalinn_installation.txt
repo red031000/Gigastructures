@@ -1,0 +1,593 @@
+### Svalinn Defense Installation costs and build times
+## platform
+@svalinn_platform_build_time = 1 #1800
+@svalinn_platform_alloys = 10000
+@svalinn_platform_influence = 250
+
+## normal first stage
+@svalinn_scaffold_build_time = 1
+@svalinn_interstellar_1_build_time = 100
+@svalinn_scaffold_alloys = 1
+@svalinn_scaffold_minerals = 1
+## normal finish
+@svalinn_finish_build_time = 1
+@svalinn_finish_alloys = 1
+@svalinn_finish_minerals = 1
+@svalinn_finish_energy = 1
+
+## ringworld first stage
+@svalinn_ringworld_scaffold_build_time = 1
+@svalinn_ringworld_scaffold_alloys = 1
+@svalinn_ringworld_scaffold_minerals = 1
+## ringworld finish
+@svalinn_ringworld_finish_build_time = 1
+@svalinn_ringworld_finish_alloys = 1
+@svalinn_ringworld_finish_minerals = 1
+@svalinn_ringworld_finish_energy = 1
+
+
+
+### Svalinn construction upkeeps
+## platform
+@svalinn_platform_upkeep_energy = 25
+@svalinn_platform_upkeep_alloys = 10
+
+## normal first stage
+@svalinn_scaffold_upkeep_energy = 1
+@svalinn_scaffold_upkeep_alloys = 1
+## normal finish
+# megastructure deleted when done
+
+## ringworld first stage
+@svalinn_ringworld_scaffold_upkeep_energy = 1
+@svalinn_ringworld_scaffold_upkeep_alloys = 1
+## ringworld finish
+# megastructure deleted when done
+
+
+### The SDI is built from a single platform but splits into two paths
+# each path is one half of the complete mega, both are required
+svalinn_platform_0 = {
+	entity = "giga_consite_5_5_entity"
+	construction_entity = "giga_consite_5_5_entity"
+	place_entity_on_planet_plane = no
+	entity_offset = { x = 0 y = 0 }
+	portrait = "GFX_megastructure_construction_background"
+
+	prerequisites = { giga_tech_svalinn_installation }
+
+	build_time = @svalinn_platform_build_time
+	resources = {
+		category = giga_svalinn_installation
+		cost = {
+			alloys = @svalinn_platform_alloys
+			influence = @svalinn_platform_influence
+			unity = @giga_giga_unity_cost
+		}
+		cost = { alloys = -1 multiplier = value:giga_ai_savings_cost|CATEGORY|military|RESOURCE|alloys|AMOUNT|@svalinn_platform_alloys| }
+		cost = { unity = -1 multiplier = value:giga_ai_savings_cost|CATEGORY|military|RESOURCE|unity|AMOUNT|@giga_big_mega_start_unity_cost| }
+		upkeep = { energy = @svalinn_platform_upkeep_energy alloys = @svalinn_platform_upkeep_alloys }
+	}
+	construction_blocks_and_blocked_by = self_type
+
+	on_build_start = {
+		giga_ai_savings_withdraw = { CATEGORY = military RESOURCE = alloys AMOUNT = @svalinn_platform_alloys }
+		giga_ai_savings_withdraw = { CATEGORY = military RESOURCE = unity  AMOUNT = @giga_big_mega_start_unity_cost }
+		# this is broken, thx paradox
+		#apply_giga_bulwark_trad_build_speed = yes
+	}
+	on_build_cancel = {
+		giga_ai_savings_refund = { CATEGORY = military RESOURCE = alloys }
+		giga_ai_savings_refund = { CATEGORY = military RESOURCE = unity }
+	}
+
+	potential = {
+		# gigastructure
+		has_technology = giga_tech_svalinn_installation
+		NOT = { has_global_flag = svalinn_disabled }
+		is_giga_one_planet_origin = no # todo: frameworld integration
+		OR = {
+			check_variable = { which = giga_svalinn_cap value = 0 } # No Cap
+			check_variable = { which = giga_current_svalinn value < giga_svalinn_cap }
+		}
+	}
+
+	possible = {
+		custom_tooltip = {
+			fail_text = "requires_inside_border"
+			is_inside_border = from
+		}
+		custom_tooltip = {
+			fail_text = "requires_not_capped"
+			from = {
+				OR = {
+					check_variable = { which = giga_svalinn_cap value = 0 } # No Cap
+					check_variable = { which = giga_current_svalinn value < giga_svalinn_cap }
+				}
+			}
+		}
+	}
+
+	placement_rules = {
+		planet_possible = {
+			# anomaly check
+			custom_tooltip = {
+				fail_text = "requires_no_anomaly"
+				has_anomaly = no
+			}
+			# survey check
+			custom_tooltip = {
+				fail_text = "requires_surveyed_planet"
+				is_surveyed = { who = prev.from status = yes }
+			}
+			# built on a star
+			custom_tooltip = {
+				fail_text = "must_build_around_star"
+				is_star = yes
+			}
+			# must be able to support one of the two upgrade paths
+			custom_tooltip = {
+				fail_text = "svalinn_must_be_upgradeable"
+				OR = {
+					is_giga_svalinn_bifrost_allowed = yes
+					is_giga_svalinn_interstellar_allowed = yes
+				}
+			}
+			# tried to display which options were available,
+			# but it just blocks the mega completely
+			#OR = {
+			#	custom_tooltip = {
+			#		success_text = "giga_svalinn_bifrost_not_blocked"
+			#		fail_text = "giga_svalinn_bifrost_blocked"
+			#		is_giga_svalinn_bifrost_allowed = yes
+			#	}
+			#	custom_tooltip = {
+			#		success_text = "giga_svalinn_interstellar_not_blocked"
+			#		fail_text = "giga_svalinn_interstellar_blocked"
+			#		is_giga_svalinn_interstellar_allowed = yes
+			#	}
+			#	custom_tooltip = {
+			#		success_text = "giga_svalinn_both_upgrades_allowed"
+			#		is_giga_svalinn_bifrost_allowed = yes
+			#		is_giga_svalinn_interstellar_allowed = yes
+			#	}
+			#}
+
+			# deliberate: only checking if the central structure is a mega
+			# NOT if it has a mega orbiting - this is to allow building a defense installation next to a system with a dyson or whatever
+			custom_tooltip = {
+				fail_text = "requires_no_existing_megastructure"
+				NOT = { has_planet_flag = megastructure }
+			}
+			# only one construction at a time per system
+			custom_tooltip = {
+				fail_text = "requires_no_existing_svalinn_construction"
+				NOR = {
+					has_planet_flag = has_svalinn_platform_mega
+					solar_system = { has_star_flag = has_svalinn_platform_mega }
+				}
+			}
+		}
+	}
+
+	ai_weight = {
+		weight = value:giga_ai_base_giga
+
+		#mult = value:giga_ai_upkeep|RESOURCE|energy|AMOUNT|1|MIN|0.5|
+		#mult = value:giga_ai_upkeep|RESOURCE|engineering_research|AMOUNT|1|
+		#mult = value:giga_ai_output|RESOURCE|minerals|AMOUNT|1|MIN|0.75|
+		mult = value:giga_ai_prevent_spam|MEGA|svalinn_installation|
+		mult = value:giga_ai_militarist_plus
+
+		## Do we want the production - makes some influence so boost if needing that
+		modifier = { factor = 2.00	from = { has_monthly_income = { resource = influence value < 2 } } }
+
+		## Is this system a good location?
+		# border with someone else
+		modifier = { factor = 500	any_neighbor_system = { exists = owner NOT = { owner = { is_same_value = from } } } }
+		# choke point system function
+		modifier = { factor = 50 	is_bottleneck_system = yes }
+		# has gateway, l-gate, primordial pillar in system, so fortify
+		modifier = { factor = 10
+			any_megastructure = {
+				OR = { 
+					is_megastructure_type = gateway_final
+					is_megastructure_type = gateway_restored
+					is_megastructure_type = lgate_base
+					is_megastructure_type = ehof_pgate_unknown
+					is_megastructure_type = ehof_pgate_gateway
+				}
+			}
+		}
+		# two jumps away owned by somebody else too
+		modifier = { factor = 1.5	any_neighbor_system = { any_neighbor_system = { exists = owner NOT = { owner = { is_same_value = from } } } } }
+		# AI decided to fortify this system for some reason
+		modifier = { factor = 5  starbase = { has_starbase_size >= starbase_starfortress } }
+		# Big worlds make good fortresses, but small ones in the case of protecting a larger world work as well
+		modifier = { factor = 5	any_system_planet = { habitable_planet = yes planet_size >= 25 } }
+		modifier = { factor = 0.1
+			AND = {
+				any_system_planet = { 			habitable_planet = yes 	planet_size < 18 }
+				NOT = { any_system_planet = { 	habitable_planet = yes 	planet_size >= 20 } }
+			}
+		}
+		# lots of planets
+		modifier = { factor = 10
+			count_system_planet = {
+				limit = {
+					habitable_planet = yes
+				}
+				count >= 5
+			}
+		}
+		# is capital, but only with a second planet to fortify
+		modifier = {
+			factor = 3
+			solar_system = {
+				exists = owner
+				is_same_value = owner.capital_scope.solar_system
+				count_system_planet = {
+					limit = {
+						habitable_planet = yes
+					}
+					count >= 2
+				}
+			}
+		}
+		# Check the planet designation
+		modifier = { factor = 5.00	any_system_planet = { has_designation = col_fortress } }
+
+		## Do we lean towards this from federation/ethic/civic?
+		modifier = { factor = value:giga_ai_base_continue	from = { has_country_flag = pangalactic_defense_league } }
+		modifier = { factor = 2		from = { has_federation = yes federation = { has_federation_type = hegemony_federation } } }
+		modifier = { factor = 3		from = { has_federation = yes federation = { has_federation_type = military_federation } } }
+		modifier = { factor = 5		from = { has_ethic = ethic_fanatic_militarist } }
+		modifier = { factor = 3		from = { has_ethic = ethic_militarist } }
+		modifier = { factor = 2		from = { has_ethic = ethic_fanatic_xenophobe } }
+		modifier = { factor = 1.5	from = { has_ethic = ethic_xenophobe } }
+		modifier = { factor = 0.1	from = { has_ethic = ethic_fanatic_xenophile } }
+		modifier = { factor = 0.5	from = { has_ethic = ethic_xenophile } }
+		modifier = { factor = 0.5	from = { has_ethic = ethic_fanatic_pacifist } }
+		modifier = { factor = 0.1	from = { has_ethic = ethic_pacifist } }
+		modifier = { factor = 1.5	from = { has_civic = civic_citizen_service } }
+		modifier = { factor = 20	from = { has_civic = civic_inwards_perfection } }
+
+		# Don't care about total number
+
+		# AI spam controls
+		modifier = { factor = 0.00 from = { has_country_flag = has_recently_built_svalinn_installation } }
+		# cannot comply building in progress
+		#modifier = {
+			#factor = 0
+			#from = {
+				#has_svalinn_megastructure = yes
+			#}
+		#}
+	}
+
+	on_build_complete = {
+		# ran on system
+		save_event_target_as = giga_system
+		# ran on owner
+		from = { save_event_target_as = giga_owner }
+
+		# ran on star "planet" object
+		fromfrom.planet = {
+			save_event_target_as = giga_planet
+			if = { limit = { exists = orbital_station } orbital_station = { dismantle = yes } }
+
+			## TODO: save country flag with system scope ID based on the star and mega status
+			## used to allow different upgrades
+			## investigate using this to save neighbouring systems too
+			if = {
+				limit = {
+					# see scripted triggers for details, must be right star and none or non-blocking megastructure
+					is_giga_svalinn_bifrost_allowed = yes
+				}
+				# records the svalinn system for later reference, because system can be scoped from the possible block (mega/planet cannot)
+				# this country flag records the system ID on your country, later check looks at country for whether this system was acceptable
+				event_target:giga_owner = { set_country_flag = giga_svalinn_bifrost_allowed_@ROOT }
+			}
+
+			# after checks are done, star now has a megastructure (for now)
+			# has to be delayed to not interfere with checks above
+			planet_event = {
+				id = giga_svalinn_construction.001
+				days = 2
+			}
+		}
+
+		# notification, ai control, the usual
+		from = {
+			#country_event = { id = giga_dialog.5001 } # notification
+			set_timed_country_flag = { flag = has_recently_built_svalinn years = 5 }
+			change_variable = { which = giga_current_svalinn value = 1 }
+		}
+	}
+}
+
+### the coronal tap upgrade path
+svalinn_bifrost_1 = {
+	entity = "molluscoid_01_dyson_sphere_part_3_entity"
+	construction_entity = "molluscoid_01_dyson_sphere_part_3_entity"
+	place_entity_on_planet_plane = no
+	entity_offset = { x = 0 y = 0 }
+	scales_with_planet = yes
+	portrait = "GFX_spaceport_background"
+	upgrade_from = { svalinn_world_0 }
+
+	build_time = @svalinn_scaffold_build_time
+	resources = {
+		category = giga_megastructures
+		cost = {
+			alloys = @svalinn_scaffold_alloys
+			minerals = @svalinn_scaffold_minerals
+			unity = @giga_big_mega_unity_cost
+		}
+		cost = { alloys = -1 multiplier = value:giga_ai_savings_cost|CATEGORY|military|RESOURCE|alloys|AMOUNT|@svalinn_scaffold_alloys| }
+		cost = { unity = -1 multiplier = value:giga_ai_savings_cost|CATEGORY|military|RESOURCE|unity|AMOUNT|@giga_big_mega_unity_cost| }
+		upkeep = {
+			energy = @svalinn_scaffold_upkeep_energy
+			alloys = @svalinn_scaffold_upkeep_alloys
+		}
+	}
+	construction_blocks_and_blocked_by = self_type
+
+	on_build_start = {
+		giga_ai_savings_withdraw = { CATEGORY = military RESOURCE = alloys AMOUNT = @svalinn_platform_alloys }
+		giga_ai_savings_withdraw = { CATEGORY = military RESOURCE = unity  AMOUNT = @giga_big_mega_start_unity_cost }
+		#apply_giga_bulwark_trad_build_speed = yes
+	}
+
+	potential = { NOT = { has_global_flag = svalinn_disabled } always = no }
+	possible = {
+		from = { has_technology = giga_tech_svalinn_installation }
+		custom_tooltip = {
+			fail_text = "giga_svalinn_bifrost_blocked"
+			# checks your country for recorded info on the system (ROOT) from earlier
+			from = { has_country_flag = giga_svalinn_bifrost_allowed_@ROOT }
+		}
+	}
+
+	# TODO
+	ai_weight = { factor = 0 } # If we can build it, we will finish it
+	
+	# TODO
+	on_build_complete = {
+		save_event_target_as = giga_system
+		if = { limit = { exists = fromfrom.planet } fromfrom.planet = { save_event_target_as = giga_planet } }
+		#from = { country_event = { id = giga_dialog.5002 } }	# Notification
+	}
+}
+
+
+### the interstellar emplacement upgrade path
+
+# this is a "fake" mega that only exists to give the player the target neighbor system dialogue
+# before making the real interstellar construction site
+svalinn_interstellar_neighbor_system_option_1 = {
+	entity = "giga_consite_5_5_entity"
+	construction_entity = "giga_consite_5_5_entity"
+	place_entity_on_planet_plane = no
+	entity_offset = { x = 0 y = 0 }
+	portrait = "GFX_megastructure_nicoll"
+	upgrade_from = { svalinn_platform_0 }
+
+	potential = { NOT = { has_global_flag = svalinn_disabled } }
+	possible = {
+		any_neighbor_system = { is_valid_svalinn_bastion_target = yes }
+		from = { has_technology = giga_tech_svalinn_installation }
+	}
+
+	resources = { category = giga_gigastructures }
+	construction_blocks_and_blocked_by = self_type
+
+	# TODO
+	ai_weight = { factor = 1 }
+
+	on_build_complete = {
+		# save the platform
+		fromfrom = {
+			save_event_target_as = giga_svalinn_megastructure
+		}
+		# count up neighbors
+		system_event = { id = giga_svalinn_construction.010 }
+		# player then gets a dialog event to pick a target
+	}
+}
+
+# fallback in case the dialog window breaks - just lets you reset the mega
+svalinn_interstellar_neighbor_system_option_broke = {
+	entity = ""
+	construction_entity = ""
+	place_entity_on_planet_plane = no
+	portrait = "GFX_megastructure_nicoll"
+	upgrade_from = { svalinn_interstellar_neighbor_system_option_1 }
+	
+	resources = { category = giga_gigastructures }
+	construction_blocks_and_blocked_by = self_type
+
+	potential = { always = yes }
+	possible = { always = yes }
+	
+	# only players will know to unbork it
+	ai_weight = { factor = 0 }
+
+	on_build_complete = {
+		# just spawn back the original
+		spawn_megastructure = {
+			type = svalinn_platform_0
+			owner = from
+			coords_from = fromfrom
+			planet = fromfrom.planet
+		}
+		fromfrom = {
+			remove_megastructure = this
+		}
+	}
+}
+
+# this mega is placed by event after the player has picked a target, this is the "real" construction site for the interstellar path
+# allows proper localization and picture
+svalinn_interstellar_1 = {
+	entity = "avian_01_orbital_ring_tier_3_section_entity"
+	construction_entity = "avian_01_orbital_ring_tier_3_section_entity"
+	place_entity_on_planet_plane = no
+	entity_offset = { x = 0 y = 0 }
+	scales_with_planet = yes
+	portrait = "GFX_spaceport_background"
+	upgrade_from = { svalinn_interstellar_neighbor_system_option_1 }
+
+	build_time = @svalinn_interstellar_1_build_time
+	resources = {
+		category = giga_megastructures
+		cost = {
+			alloys = @svalinn_scaffold_alloys
+			minerals = @svalinn_scaffold_minerals
+			unity = @giga_big_mega_unity_cost
+		}
+		cost = { alloys = -1 multiplier = value:giga_ai_savings_cost|CATEGORY|military|RESOURCE|alloys|AMOUNT|@svalinn_scaffold_alloys| }
+		cost = { unity = -1 multiplier = value:giga_ai_savings_cost|CATEGORY|military|RESOURCE|unity|AMOUNT|@giga_big_mega_unity_cost| }
+		upkeep = {
+			energy = @svalinn_scaffold_upkeep_energy
+			alloys = @svalinn_scaffold_upkeep_alloys
+		}
+	}
+	construction_blocks_and_blocked_by = self_type
+
+	# while building this mega, do calculations for targetting nearby system's hyperlane
+	on_build_start = {
+		giga_ai_savings_withdraw = { CATEGORY = military RESOURCE = alloys AMOUNT = @svalinn_platform_alloys }
+		giga_ai_savings_withdraw = { CATEGORY = military RESOURCE = unity  AMOUNT = @giga_big_mega_start_unity_cost }
+		#apply_giga_bulwark_trad_build_speed = yes
+
+		# start event that does the calculation for system angle
+		system_event = { id = giga_svalinn_construction.080 }
+	}
+
+	potential = { always = no }
+	possible = { always = no }
+
+	# TODO
+	ai_weight = { factor = 0 }
+	
+	# TODO
+	on_build_complete = {
+		save_event_target_as = giga_system
+		if = { limit = { exists = fromfrom.planet } fromfrom.planet = { save_event_target_as = giga_planet } }
+		# spawn new system for SDI
+		system_event = { id = giga_svalinn_construction.100 }
+		#from = { country_event = { id = giga_dialog.5002 } }	# Notification
+
+		# spawn new structure at the hyperlane
+		#solar_system = {
+		#	spawn_megastructure = {
+		#		type = svalinn_interstellar_2
+		#		owner = root.from
+		#		planet = root.fromfrom.planet
+		#		coords_from = root.fromfrom.planet
+		#	}
+		#}
+		#fromfrom = {
+		#	remove_megastructure = this
+		#}
+	}
+}
+
+svalinn_interstellar_2 = {
+	entity = "gateway_entity"
+	construction_entity = ""
+	place_entity_on_planet_plane = no
+	build_outside_gravity_well = yes
+	portrait = "GFX_megastructure_nicoll"
+	
+	resources = { category = giga_gigastructures }
+	construction_blocks_and_blocked_by = self_type
+
+	potential = { always = no }
+	possible = { always = no }
+
+	on_build_complete = {
+		#from = { country_event = { id = giga_x.002 } }
+	}
+
+	### TEST ###
+	bypass_type = quantum_catapult
+	station_modifier = {
+		catapult_spread_base = 0
+		catapult_range_base = 50
+		quantum_catapult_megastructure_bypass_windup_mult = -0.90
+	}
+}
+
+
+
+
+
+## TODO
+# svalinn_unfinished = {
+# 	entity = ""
+# 	construction_entity = ""
+# 	place_entity_on_planet_plane = no
+# 	entity_offset = { x = 0 y = 0 }
+# 	scales_with_planet = yes
+# 	portrait = "GFX_spaceport_background"
+# 	upgrade_from = { svalinn_platform_0 }
+
+# 	build_time = @svalinn_finish_build_time
+# 	resources = {
+# 		category = giga_megastructures
+# 		cost = {
+# 			alloys = @svalinn_finish_alloys
+# 			minerals = @svalinn_finish_minerals
+# 			energy = @svalinn_finish_energy
+# 			unity = @giga_big_mega_unity_cost
+# 		}
+# 		cost = { alloys = -1 multiplier = value:giga_ai_savings_cost|CATEGORY|military|RESOURCE|alloys|AMOUNT|@svalinn_finish_alloys| }
+# 		cost = { unity = -1 multiplier = value:giga_ai_savings_cost|CATEGORY|military|RESOURCE|unity|AMOUNT|@giga_big_mega_unity_cost| }
+# 	}
+
+# 	on_build_start = {
+# 		giga_ai_savings_withdraw = { CATEGORY = military RESOURCE = alloys AMOUNT = @svalinn_finish_alloys }
+# 		giga_ai_savings_withdraw = { CATEGORY = military RESOURCE = unity  AMOUNT = @giga_big_mega_unity_cost }
+# 		apply_giga_bulwark_trad_build_speed = yes
+# 	}
+
+# 	potential = { NOT = { has_global_flag = svalinn_disabled } }
+# 	possible = { from = { has_technology = giga_tech_svalinn_installation } }
+
+# 	ai_weight = { factor = 10000 } # If we can build it, we will finish it
+# 	on_build_complete = {
+# 		save_event_target_as = giga_system
+# 		if = { limit = { exists = fromfrom.planet } fromfrom.planet = { save_event_target_as = giga_planet } }
+# 		from = {
+# 			country_event = { id = giga_dialog.5003 }				# Notification
+# 			set_country_flag = has_built_or_repaired_gigastructure	# Allows Gigastructural Constructs
+# 			change_variable = { which = svalinn_world value = 1 }
+# 			save_event_target_as = svalinn_world_owner
+# 			# if = {
+# 			# 	limit = {
+# 			# 		NOR = {
+# 			# 			has_global_flag = giga_achievements_disabled
+# 			# 			has_country_flag = giga_achievement_77
+# 			# 		}
+# 			# 	}
+# 			# 	set_country_flag = giga_achievement_77 # CHANGE THIS it triggers PCC achievement right now
+# 			# 	set_timed_country_flag = { flag = giga_achievement_77_notification days = 30 }
+# 			# 	giga_achievement_sound = yes
+# 			# }
+# 		}
+# 		fromfrom.planet = {
+# 			# change the planet class depending on what is being converted
+# 			set_giga_svalinn_planet_class = yes
+# 			set_planet_flag = megastructure
+# 			set_planet_flag = giga_planet_mega
+
+# 			init_giga_svalinn = yes
+# 		}
+# 		remove_megastructure = fromfrom
+# 		fromfrom.planet = {
+# 			giga_clear_has_mega_flag = yes
+# 		}
+# 	}
+# }
